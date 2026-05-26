@@ -263,6 +263,7 @@ startBtn.addEventListener('click', async () => {
 
     const {renderer, scene, camera} = mindarThree;
     renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
+    renderer.setClearColor(0x000000, 0); // transparent — lets camera feed show through
 
     const anchor = mindarThree.addAnchor(0);
 
