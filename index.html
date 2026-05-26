@@ -6,7 +6,6 @@
   <meta name="mobile-web-app-capable" content="yes">
   <title>notformelessnotvoid — AR</title>
 
-  <!-- Import map: tells the browser how to resolve bare module specifiers -->
   <script type="importmap">
   {
     "imports": {
@@ -15,8 +14,6 @@
     }
   }
   </script>
-
-  <!-- MindAR as ES module — must come after importmap -->
   <script type="module" src="./mindar-image-three.prod.js"></script>
 
   <style>
@@ -24,7 +21,6 @@
     html, body { width:100%; height:100%; overflow:hidden; background:#000; }
     #ar-container { position:relative; width:100vw; height:100vh; overflow:hidden; }
 
-    /* ── Start screen ─────────────────────────────────── */
     #start-screen {
       position:absolute; inset:0; z-index:500;
       background:#020202;
@@ -37,79 +33,43 @@
     #start-btn {
       border:1.5px solid #00F5C8; background:none; color:#00F5C8;
       font-family:'Courier New',Courier,monospace;
-      font-size:11px; letter-spacing:4px; padding:18px 40px; cursor:pointer;
-      position:relative;
+      font-size:11px; letter-spacing:4px; padding:18px 40px; cursor:pointer; position:relative;
     }
     #start-btn:disabled { opacity:.4; cursor:default; }
-    #start-btn::before {
-      content:''; position:absolute; top:-2px; left:-2px; width:10px; height:10px;
-      border-top:2px solid #00F5C8; border-left:2px solid #00F5C8;
-    }
-    #start-btn::after {
-      content:''; position:absolute; bottom:-2px; right:-2px; width:10px; height:10px;
-      border-bottom:2px solid #00F5C8; border-right:2px solid #00F5C8;
-    }
-    #status-msg {
-      font-size:9px; letter-spacing:2px; opacity:.5;
-      text-align:center; max-width:300px; line-height:1.8; min-height:36px;
-    }
+    #start-btn::before { content:''; position:absolute; top:-2px; left:-2px; width:10px; height:10px; border-top:2px solid #00F5C8; border-left:2px solid #00F5C8; }
+    #start-btn::after  { content:''; position:absolute; bottom:-2px; right:-2px; width:10px; height:10px; border-bottom:2px solid #00F5C8; border-right:2px solid #00F5C8; }
+    #status-msg { font-size:9px; letter-spacing:2px; opacity:.5; text-align:center; max-width:300px; line-height:1.8; min-height:36px; }
     #status-msg.error { color:#FF3E3E; opacity:.9; }
-    #loading-bar {
-      width:200px; height:1px; background:rgba(0,245,200,.15);
-      position:relative; overflow:hidden; display:none;
-    }
-    #loading-bar::after {
-      content:''; position:absolute; top:0; left:-50%; width:50%; height:100%;
-      background:#00F5C8; animation:sweep 1.2s ease-in-out infinite;
-    }
+    #loading-bar { width:200px; height:1px; background:rgba(0,245,200,.15); position:relative; overflow:hidden; display:none; }
+    #loading-bar::after { content:''; position:absolute; top:0; left:-50%; width:50%; height:100%; background:#00F5C8; animation:sweep 1.2s ease-in-out infinite; }
     @keyframes sweep { 0%{left:-50%} 100%{left:150%} }
     #loading-bar.active { display:block; }
 
-    /* ── HUD ──────────────────────────────────────────── */
-    #hud {
-      position:absolute; inset:0; pointer-events:none; z-index:200;
-      font-family:'Courier New',Courier,monospace; color:#00F5C8; display:none;
-    }
+    #hud { position:absolute; inset:0; pointer-events:none; z-index:200; font-family:'Courier New',Courier,monospace; color:#00F5C8; display:none; }
     #hud.visible { display:block; }
-    #top-bar {
-      position:absolute; top:0; left:0; right:0;
-      display:flex; justify-content:space-between; align-items:center;
-      padding:14px 16px; font-size:9px; letter-spacing:2.5px;
-      background:linear-gradient(to bottom,rgba(0,0,0,.65),transparent);
-    }
-    #bot-bar {
-      position:absolute; bottom:0; left:0; right:0;
-      display:flex; justify-content:space-between; align-items:center;
-      padding:14px 16px; font-size:9px; letter-spacing:2px;
-      background:linear-gradient(to top,rgba(0,0,0,.65),transparent);
-    }
+    #top-bar { position:absolute; top:0; left:0; right:0; display:flex; justify-content:space-between; align-items:center; padding:14px 16px; font-size:9px; letter-spacing:2.5px; background:linear-gradient(to bottom,rgba(0,0,0,.5),transparent); }
+    #bot-bar { position:absolute; bottom:0; left:0; right:0; display:flex; justify-content:space-between; align-items:center; padding:14px 16px; font-size:9px; letter-spacing:2px; background:linear-gradient(to top,rgba(0,0,0,.5),transparent); }
     .hud-c { position:absolute; width:24px; height:24px; }
     .hud-c.tl { top:52px; left:16px; border-top:1.5px solid #00F5C8; border-left:1.5px solid #00F5C8; }
     .hud-c.tr { top:52px; right:16px; border-top:1.5px solid #00F5C8; border-right:1.5px solid #00F5C8; }
     .hud-c.bl { bottom:52px; left:16px; border-bottom:1.5px solid #00F5C8; border-left:1.5px solid #00F5C8; }
     .hud-c.br { bottom:52px; right:16px; border-bottom:1.5px solid #00F5C8; border-right:1.5px solid #00F5C8; }
-    #scan-prompt {
-      position:absolute; bottom:60px; left:50%; transform:translateX(-50%);
-      white-space:nowrap; font-size:9px; letter-spacing:3px; text-align:center;
-    }
+    #scan-prompt { position:absolute; bottom:60px; left:50%; transform:translateX(-50%); white-space:nowrap; font-size:9px; letter-spacing:3px; text-align:center; }
     #scan-prompt.searching { animation:blink 1.4s ease-in-out infinite; }
     #scan-prompt.detected { color:#00F5C8; text-shadow:0 0 12px rgba(0,245,200,.6); }
-    @keyframes blink { 0%,100%{opacity:.28} 50%{opacity:.75} }
-    @keyframes recdot { 0%,100%{opacity:.25} 50%{opacity:.9} }
+    @keyframes blink  { 0%,100%{opacity:.28} 50%{opacity:.75} }
+    @keyframes recdot { 0%,100%{opacity:.25} 50%{opacity:.9}  }
     .rec { animation:recdot 1.4s ease-in-out infinite; }
   </style>
 </head>
-
 <body>
 <div id="ar-container">
-
   <div id="start-screen">
     <h1>FACE ANALYSIS PROTOCOL</h1>
     <button id="start-btn">INITIALISE AR</button>
     <div id="loading-bar"></div>
     <div id="status-msg">Point camera at the physical artwork.</div>
   </div>
-
   <div id="hud">
     <div id="top-bar">
       <span>FACE ANALYSIS PROTOCOL</span>
@@ -124,41 +84,135 @@
       <span style="color:#FF3E3E"><span style="opacity:.6">ID: </span>UNKNOWN</span>
     </div>
   </div>
-
 </div>
 
-<!-- Main AR logic as an ES module (same Three.js instance as MindAR) -->
 <script type="module">
 import * as THREE from "three";
 
+/* ── 98 landmark points mapped to the painting ─────────────────────────
+   Coordinates are normalised (0-1) over the image dimensions.
+   Grouped by facial region for readability.
+──────────────────────────────────────────────────────────────────────── */
 const PTS = [
-  [.214,.268],[.192,.344],[.180,.424],[.196,.510],[.231,.591],
-  [.279,.668],[.352,.726],[.432,.752],[.512,.727],[.576,.668],
-  [.622,.589],[.642,.507],[.638,.420],[.615,.336],[.587,.266],
-  [.218,.260],[.265,.226],[.318,.216],[.372,.232],[.416,.258],
-  [.436,.248],[.483,.215],[.541,.214],[.593,.234],[.633,.264],
-  [.238,.320],[.278,.298],[.330,.296],[.379,.318],[.335,.356],[.284,.358],
-  [.436,.308],[.480,.286],[.538,.284],[.588,.308],[.545,.346],[.490,.348],
-  [.420,.338],[.418,.382],[.413,.436],[.410,.496],
-  [.352,.528],[.386,.546],[.426,.548],[.466,.541],[.506,.527],
-  [.296,.618],[.336,.590],[.386,.579],[.436,.578],[.492,.589],[.558,.617],
-  [.520,.667],[.462,.686],[.404,.687],[.346,.668],
-  [.431,.740]
+  // JAW LINE — 15 pts (0-14)
+  [.208,.262],[.190,.340],[.178,.420],[.192,.504],[.228,.588],
+  [.274,.664],[.348,.722],[.432,.750],[.514,.724],[.578,.664],
+  [.624,.586],[.645,.503],[.641,.416],[.618,.330],[.590,.258],
+
+  // HAIRLINE ARC — 8 pts (15-22) traces where hair meets forehead
+  [.214,.236],[.258,.208],[.316,.194],[.382,.188],
+  [.450,.188],[.514,.196],[.566,.212],[.600,.238],
+
+  // FOREHEAD INTERIOR — 4 pts (23-26)
+  [.318,.248],[.382,.234],[.448,.234],[.514,.250],
+
+  // LEFT EYEBROW — 7 pts (27-33) — slightly heavier, left of centre
+  [.220,.256],[.244,.238],[.272,.226],[.314,.216],
+  [.356,.220],[.390,.228],[.418,.254],
+
+  // RIGHT EYEBROW — 7 pts (34-40) — right of centre
+  [.436,.246],[.464,.226],[.500,.214],[.538,.212],
+  [.574,.222],[.604,.232],[.630,.256],
+
+  // LEFT EYE — 9 pts (41-49) — more closed / squinting
+  [.228,.316],[.258,.296],[.292,.292],[.330,.294],[.366,.316],
+  [.348,.350],[.304,.354],[.264,.348],[.240,.330],
+
+  // RIGHT EYE — 9 pts (50-58) — more open, visible iris
+  [.432,.306],[.468,.282],[.508,.278],[.548,.282],[.582,.306],
+  [.564,.342],[.518,.348],[.474,.342],[.448,.324],
+
+  // NOSE BRIDGE — 6 pts (59-64)
+  [.422,.334],[.420,.362],[.417,.392],[.415,.424],[.413,.454],[.411,.490],
+
+  // NOSE TIP + ALA — 7 pts (65-71)
+  [.350,.524],[.376,.544],[.400,.552],[.424,.554],
+  [.452,.548],[.478,.538],[.508,.520],
+
+  // MOUTH OUTER — 8 pts upper + 6 pts lower (72-85)
+  [.292,.612],[.318,.592],[.354,.576],[.392,.570],
+  [.428,.570],[.468,.578],[.504,.590],[.556,.612],
+  [.520,.660],[.480,.682],[.440,.688],[.404,.690],
+  [.356,.680],[.320,.660],
+
+  // TEETH LINE suggestion — 4 pts (86-89)
+  [.362,.624],[.400,.618],[.440,.618],[.478,.624],
+
+  // CHIN — 3 pts (90-92)
+  [.396,.752],[.432,.762],[.470,.752],
+
+  // LEFT CHEEK — 3 pts (93-95)
+  [.195,.442],[.192,.510],[.204,.572],
+
+  // RIGHT CHEEK — 3 pts (96-98)
+  [.648,.436],[.650,.504],[.636,.566],
 ];
+
+/* ── Mesh edge connections ──────────────────────────────────────────── */
 const EDGES = [
+  // Jaw outline
   [0,1],[1,2],[2,3],[3,4],[4,5],[5,6],[6,7],[7,8],[8,9],[9,10],
   [10,11],[11,12],[12,13],[13,14],
-  [15,16],[16,17],[17,18],[18,19],[20,21],[21,22],[22,23],[23,24],
-  [25,26],[26,27],[27,28],[28,29],[29,30],[30,25],
-  [31,32],[32,33],[33,34],[34,35],[35,36],[36,31],
-  [37,38],[38,39],[39,40],
-  [40,41],[40,43],[40,45],[41,42],[42,43],[43,44],[44,45],
-  [46,47],[47,48],[48,49],[49,50],[50,51],[51,46],
-  [51,52],[52,53],[53,54],[54,55],[55,46],
-  [7,56],[8,56],[15,25],[19,28],[20,31],[24,34],
-  [37,27],[37,32],[4,46],[10,51],[0,15],[14,24]
+  // Jaw to hairline
+  [0,15],[14,22],
+  // Hairline arc
+  [15,16],[16,17],[17,18],[18,19],[19,20],[20,21],[21,22],
+  // Forehead row
+  [23,24],[24,25],[25,26],
+  // Forehead to hairline
+  [23,17],[24,18],[25,19],[26,20],
+  // Forehead to eyebrows
+  [23,27],[26,40],
+  // Left eyebrow
+  [27,28],[28,29],[29,30],[30,31],[31,32],[32,33],
+  // Right eyebrow
+  [34,35],[35,36],[36,37],[37,38],[38,39],[39,40],
+  // Left eye
+  [41,42],[42,43],[43,44],[44,45],[45,46],[46,47],[47,48],[48,41],
+  // Right eye
+  [50,51],[51,52],[52,53],[53,54],[54,55],[55,56],[56,57],[57,50],
+  // Eyebrow to eye
+  [27,41],[33,44],[34,50],[40,53],
+  // Eye to cheek
+  [41,93],[54,96],
+  // Nose bridge
+  [59,60],[60,61],[61,62],[62,63],[63,64],
+  // Nose to eyes
+  [59,43],[59,52],
+  // Nose tip
+  [64,65],[65,66],[66,67],[67,68],[68,69],[69,70],[70,71],[65,71],
+  // Nose tip to mouth
+  [67,72],[70,79],
+  // Cheek connections
+  [93,94],[94,95],[93,4],[95,5],[96,97],[97,98],[96,9],[98,10],
+  // Mouth outer upper
+  [72,73],[73,74],[74,75],[75,76],[76,77],[77,78],[78,79],
+  // Mouth outer lower
+  [79,80],[80,81],[81,82],[82,83],[83,84],[84,72],
+  // Teeth line
+  [86,87],[87,88],[88,89],
+  // Mouth to teeth
+  [73,86],[78,89],
+  // Chin
+  [90,91],[91,92],[7,91],[90,6],[92,8],
+  // Jaw to eye lines (face structure)
+  [2,93],[12,96],
+  // Forehead interior cross
+  [15,23],[22,26],[16,23],[21,26],
+  // Nose side walls
+  [63,65],[63,71],
 ];
-const MEASURES = [[27,33],[25,34],[0,14],[7,56],[37,43]];
+
+/* ── Biometric measurements (red lines) ────────────────────────────── */
+const MEASURES = [
+  [43,52], // IPD — pupil centres
+  [41,54], // eye width outer
+  [0,14],  // face width
+  [7,91],  // face height
+  [67,75], // nose width
+];
+
+/* ─────────────────────────────────────────────────────────────────── */
 
 const startScreen = document.getElementById('start-screen');
 const startBtn    = document.getElementById('start-btn');
@@ -189,7 +243,7 @@ startBtn.addEventListener('click', async () => {
     }
 
     const IMG_H = 4/3;
-    const toAR  = (nx,ny,z=0.015) =>
+    const toAR  = (nx,ny,z=0.012) =>
       new THREE.Vector3((nx-.5),(0.5-ny)*IMG_H,z);
     const arPts = PTS.map(([x,y])=>toAR(x,y));
 
@@ -211,89 +265,146 @@ startBtn.addEventListener('click', async () => {
     renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
 
     const anchor = mindarThree.addAnchor(0);
-    const add = (geo,mat) => anchor.group.add(new THREE.LineSegments(geo,mat));
-    const addP = (geo,mat) => anchor.group.add(new THREE.Points(geo,mat));
 
-    const edgeVerts=[];
-    EDGES.forEach(([a,b])=>{edgeVerts.push(arPts[a].clone(),arPts[b].clone());});
+    /* ── Geometry ─────────────────────────────────────────────────── */
+    const edgeVerts = [];
+    EDGES.forEach(([a,b])=>{ edgeVerts.push(arPts[a].clone(), arPts[b].clone()); });
     const edgeGeo = new THREE.BufferGeometry().setFromPoints(edgeVerts);
 
-    const edgeMat = new THREE.LineBasicMaterial({color:0x00F5C8,transparent:true,opacity:0,blending:THREE.AdditiveBlending,depthWrite:false});
-    add(edgeGeo, edgeMat);
-    const glowMat = new THREE.LineBasicMaterial({color:0x00AAFF,transparent:true,opacity:0,blending:THREE.AdditiveBlending,depthWrite:false});
-    const glowLines = new THREE.LineSegments(edgeGeo.clone(),glowMat);
-    glowLines.scale.setScalar(1.006); anchor.group.add(glowLines);
+    // Primary mesh lines — thinner, lower opacity so artwork shows through
+    const edgeMat = new THREE.LineBasicMaterial({
+      color:0x00F5C8, transparent:true, opacity:0,
+      blending:THREE.AdditiveBlending, depthWrite:false
+    });
+    anchor.group.add(new THREE.LineSegments(edgeGeo, edgeMat));
 
+    // Soft outer glow (very subtle)
+    const glowMat = new THREE.LineBasicMaterial({
+      color:0x00AAFF, transparent:true, opacity:0,
+      blending:THREE.AdditiveBlending, depthWrite:false
+    });
+    const glowLines = new THREE.LineSegments(edgeGeo.clone(), glowMat);
+    glowLines.scale.setScalar(1.004);
+    anchor.group.add(glowLines);
+
+    // Landmark dots
     const ptGeo = new THREE.BufferGeometry().setFromPoints(arPts);
-    const ptMat = new THREE.PointsMaterial({color:0xFFFFFF,size:0.014,transparent:true,opacity:0,blending:THREE.AdditiveBlending,depthWrite:false});
-    addP(ptGeo,ptMat);
-    const glowPtMat = new THREE.PointsMaterial({color:0x00F5C8,size:0.038,transparent:true,opacity:0,blending:THREE.AdditiveBlending,depthWrite:false});
-    addP(ptGeo.clone(),glowPtMat);
+    const ptMat = new THREE.PointsMaterial({
+      color:0xFFFFFF, size:0.011, transparent:true, opacity:0,
+      blending:THREE.AdditiveBlending, depthWrite:false
+    });
+    anchor.group.add(new THREE.Points(ptGeo, ptMat));
 
-    const measV=[];
-    MEASURES.forEach(([a,b])=>{measV.push(arPts[a].clone(),arPts[b].clone());});
-    const measMat = new THREE.LineBasicMaterial({color:0xFF3E3E,transparent:true,opacity:0,blending:THREE.AdditiveBlending,depthWrite:false});
-    add(new THREE.BufferGeometry().setFromPoints(measV),measMat);
+    // Dot glow halos
+    const glowPtMat = new THREE.PointsMaterial({
+      color:0x00F5C8, size:0.028, transparent:true, opacity:0,
+      blending:THREE.AdditiveBlending, depthWrite:false
+    });
+    anchor.group.add(new THREE.Points(ptGeo.clone(), glowPtMat));
 
-    const scanMat = new THREE.MeshBasicMaterial({color:0x00F5C8,transparent:true,opacity:0,blending:THREE.AdditiveBlending,depthWrite:false,side:THREE.DoubleSide});
-    const scanPlane = new THREE.Mesh(new THREE.PlaneGeometry(1.05,0.03),scanMat);
-    scanPlane.position.z=0.012; anchor.group.add(scanPlane);
+    // Measurement lines (red)
+    const measVerts = [];
+    MEASURES.forEach(([a,b])=>{ measVerts.push(arPts[a].clone(), arPts[b].clone()); });
+    const measMat = new THREE.LineBasicMaterial({
+      color:0xFF3E3E, transparent:true, opacity:0,
+      blending:THREE.AdditiveBlending, depthWrite:false
+    });
+    anchor.group.add(new THREE.LineSegments(
+      new THREE.BufferGeometry().setFromPoints(measVerts), measMat
+    ));
 
-    const tc2=document.createElement('canvas'); tc2.width=640; tc2.height=52;
-    const tctx=tc2.getContext('2d'); tctx.fillStyle='#00F5C8';
-    tctx.font='bold 20px Courier New,monospace'; tctx.textAlign='center';
+    // Scan plane — very subtle, just enough to feel like movement
+    const scanMat = new THREE.MeshBasicMaterial({
+      color:0x00F5C8, transparent:true, opacity:0,
+      blending:THREE.AdditiveBlending, depthWrite:false, side:THREE.DoubleSide
+    });
+    const scanPlane = new THREE.Mesh(new THREE.PlaneGeometry(1.05,0.018), scanMat);
+    scanPlane.position.z = 0.010;
+    anchor.group.add(scanPlane);
+
+    // Final text
+    const tc2 = document.createElement('canvas');
+    tc2.width=640; tc2.height=52;
+    const tctx = tc2.getContext('2d');
+    tctx.fillStyle='#00F5C8';
+    tctx.font='bold 20px Courier New,monospace';
+    tctx.textAlign='center';
     tctx.fillText('ANALYSIS COMPLETE  —  SUBJECT UNRESOLVED',320,36);
-    const txtMat = new THREE.MeshBasicMaterial({map:new THREE.CanvasTexture(tc2),transparent:true,opacity:0,blending:THREE.AdditiveBlending,depthWrite:false,side:THREE.DoubleSide});
-    const txtPlane = new THREE.Mesh(new THREE.PlaneGeometry(0.92,0.058),txtMat);
-    txtPlane.position.set(0,-(IMG_H/2)+0.05,0.018); anchor.group.add(txtPlane);
+    const txtMat = new THREE.MeshBasicMaterial({
+      map:new THREE.CanvasTexture(tc2), transparent:true, opacity:0,
+      blending:THREE.AdditiveBlending, depthWrite:false, side:THREE.DoubleSide
+    });
+    const txtPlane = new THREE.Mesh(new THREE.PlaneGeometry(0.92,0.058), txtMat);
+    txtPlane.position.set(0,-(IMG_H/2)+0.05,0.014);
+    anchor.group.add(txtPlane);
 
-    const mats = [edgeMat,glowMat,ptMat,glowPtMat,measMat,scanMat,txtMat];
-    let trackStart=null;
+    const allMats = [edgeMat,glowMat,ptMat,glowPtMat,measMat,scanMat,txtMat];
+    let trackStart = null;
 
-    anchor.onTargetFound=()=>{
-      trackStart=performance.now();
-      scanPrompt.textContent='TARGET ACQUIRED — ANALYZING';
-      scanPrompt.className='detected';
+    anchor.onTargetFound = ()=>{
+      trackStart = performance.now();
+      scanPrompt.textContent = 'TARGET ACQUIRED — ANALYZING';
+      scanPrompt.className   = 'detected';
     };
-    anchor.onTargetLost=()=>{
-      trackStart=null;
-      scanPrompt.textContent='POINT CAMERA AT ARTWORK';
-      scanPrompt.className='searching';
-      confVal.textContent='—'; ptsVal.textContent='—';
-      mats.forEach(m=>{m.opacity=0;});
+    anchor.onTargetLost = ()=>{
+      trackStart = null;
+      scanPrompt.textContent = 'POINT CAMERA AT ARTWORK';
+      scanPrompt.className   = 'searching';
+      confVal.textContent = '—'; ptsVal.textContent = '—';
+      allMats.forEach(m=>{ m.opacity=0; });
     };
 
     setStatus('Loading target data…');
     await mindarThree.start();
-
-    startScreen.style.display='none';
+    startScreen.style.display = 'none';
     hud.classList.add('visible');
 
+    /* ── Render loop ────────────────────────────────────────────── */
     renderer.setAnimationLoop(()=>{
-      const now=performance.now(), t=now/1000;
-      if(trackStart!==null){
-        const el=(now-trackStart)/1000;
-        const a=Math.min(1,el*1.8);
-        const p1=.5+.5*Math.sin(t*2.8), p2=.5+.5*Math.sin(t*2.2+1);
-        edgeMat.opacity=(.38+.18*p1)*a;
-        glowMat.opacity=(.12+.06*p2)*a;
-        ptMat.opacity=(.85+.15*p1)*a;
-        glowPtMat.opacity=(.28+.12*p2)*a;
-        scanMat.opacity=.12*a;
-        scanPlane.position.y=(.5-((el*.18)%1))*IMG_H;
-        measMat.opacity=el>4?Math.min(.55,(el-4)*.4):0;
-        txtMat.opacity=el>15?Math.min(.9,(el-15)*.25):0;
-        confVal.textContent=Math.min(99.7,el*6.5).toFixed(1)+'%';
-        ptsVal.textContent=Math.min(PTS.length,Math.floor(el*9)+1)+'/'+PTS.length;
+      const now = performance.now(), t = now/1000;
+
+      if (trackStart !== null) {
+        const el = (now - trackStart) / 1000;
+
+        // Transparency-first opacities — artwork stays visible
+        const a  = Math.min(1, el * 1.6);
+        const p1 = .5 + .5 * Math.sin(t * 3.2);    // faster pulse = choppier feel
+        const p2 = .5 + .5 * Math.sin(t * 2.4+1.0);
+
+        // ── "choppy" progressive reveal ──────────────────────────
+        // Points flicker on as the scan passes, then settle
+        const nPts      = Math.min(PTS.length, Math.floor(el * 14) + 1);
+        const revealFrac = nPts / PTS.length;
+
+        edgeMat.opacity    = (.22 + .12*p1) * a * revealFrac;
+        glowMat.opacity    = (.06 + .04*p2) * a * revealFrac;
+        ptMat.opacity      = (.65 + .20*p1) * a;   // dots a little brighter
+        glowPtMat.opacity  = (.12 + .08*p2) * a;
+        scanMat.opacity    = .05 * (1 - revealFrac*0.5); // fades as reveal completes
+
+        // Scan plane
+        const scanFrac  = (el * 0.20) % 1;
+        scanPlane.position.y = (.5 - scanFrac) * IMG_H;
+
+        // Measurements after 5s
+        measMat.opacity = el > 5 ? Math.min(.40, (el-5)*.35) : 0;
+
+        // Final text after 18s
+        txtMat.opacity  = el > 18 ? Math.min(.85, (el-18)*.2) : 0;
+
+        // HUD
+        confVal.textContent = Math.min(99.7, el*5.8).toFixed(1)+'%';
+        ptsVal.textContent  = nPts+'/'+PTS.length;
       }
-      renderer.render(scene,camera);
+
+      renderer.render(scene, camera);
     });
 
   } catch(err) {
     console.error(err);
     loadingBar.classList.remove('active');
-    startBtn.disabled=false;
-    startBtn.textContent='RETRY';
+    startBtn.disabled = false;
+    startBtn.textContent = 'RETRY';
     setStatus('ERROR: '+err.message, true);
   }
 });
