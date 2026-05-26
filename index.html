@@ -4,10 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
   <meta name="mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <title>notformelessnotvoid — AR</title>
-
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     html, body { width: 100%; height: 100%; overflow: hidden; background: #000; }
@@ -19,7 +16,94 @@
       overflow: hidden;
     }
 
-    /* ── HUD overlay ───────────────────────────────── */
+    /* ── Start screen ───────────────────────────────────────────────── */
+    #start-screen {
+      position: absolute;
+      inset: 0;
+      z-index: 500;
+      background: #020202;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Courier New', Courier, monospace;
+      color: #00F5C8;
+      gap: 32px;
+      padding: 40px;
+    }
+
+    #start-screen h1 {
+      font-size: 11px;
+      letter-spacing: 4px;
+      opacity: .45;
+      font-weight: normal;
+    }
+
+    #start-btn {
+      border: 1.5px solid #00F5C8;
+      background: none;
+      color: #00F5C8;
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 11px;
+      letter-spacing: 4px;
+      padding: 18px 40px;
+      cursor: pointer;
+      position: relative;
+      transition: all .2s;
+    }
+    #start-btn:active { background: rgba(0,245,200,.1); }
+
+    /* corner brackets on button */
+    #start-btn::before, #start-btn::after {
+      content: '';
+      position: absolute;
+      width: 10px; height: 10px;
+    }
+    #start-btn::before {
+      top: -2px; left: -2px;
+      border-top: 2px solid #00F5C8; border-left: 2px solid #00F5C8;
+    }
+    #start-btn::after {
+      bottom: -2px; right: -2px;
+      border-bottom: 2px solid #00F5C8; border-right: 2px solid #00F5C8;
+    }
+
+    /* ── Status / error message ─────────────────────────────────────── */
+    #status-msg {
+      font-size: 9px;
+      letter-spacing: 2px;
+      opacity: .5;
+      text-align: center;
+      max-width: 280px;
+      line-height: 1.7;
+      min-height: 40px;
+    }
+    #status-msg.error { color: #FF3E3E; opacity: .85; }
+
+    /* ── Loading bar ────────────────────────────────────────────────── */
+    #loading-bar {
+      width: 200px;
+      height: 1px;
+      background: rgba(0,245,200,.15);
+      display: none;
+      position: relative;
+      overflow: hidden;
+    }
+    #loading-bar::after {
+      content: '';
+      position: absolute;
+      top: 0; left: -50%;
+      width: 50%; height: 100%;
+      background: #00F5C8;
+      animation: sweep 1.2s ease-in-out infinite;
+    }
+    @keyframes sweep {
+      0%   { left: -50%; }
+      100% { left: 150%; }
+    }
+    #loading-bar.active { display: block; }
+
+    /* ── HUD overlay ───────────────────────────────────────────────── */
     #hud {
       position: absolute;
       inset: 0;
@@ -27,7 +111,9 @@
       z-index: 200;
       font-family: 'Courier New', Courier, monospace;
       color: #00F5C8;
+      display: none;
     }
+    #hud.visible { display: block; }
 
     #top-bar {
       position: absolute;
@@ -35,8 +121,7 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: env(safe-area-inset-top, 12px) 16px 12px;
-      padding-top: max(env(safe-area-inset-top), 12px);
+      padding: 14px 16px;
       font-size: 9px;
       letter-spacing: 2.5px;
       background: linear-gradient(to bottom, rgba(0,0,0,0.65), transparent);
@@ -48,8 +133,7 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 12px 16px;
-      padding-bottom: max(env(safe-area-inset-bottom), 12px);
+      padding: 14px 16px;
       font-size: 9px;
       letter-spacing: 2px;
       background: linear-gradient(to top, rgba(0,0,0,0.65), transparent);
@@ -57,70 +141,59 @@
 
     .hud-corner {
       position: absolute;
-      width: 24px;
-      height: 24px;
+      width: 24px; height: 24px;
     }
-    .hud-corner.tl { top: 52px;  left: 16px;  border-top: 1.5px solid #00F5C8; border-left: 1.5px solid #00F5C8; }
-    .hud-corner.tr { top: 52px;  right: 16px; border-top: 1.5px solid #00F5C8; border-right: 1.5px solid #00F5C8; }
+    .hud-corner.tl { top: 52px;   left: 16px;  border-top: 1.5px solid #00F5C8; border-left: 1.5px solid #00F5C8; }
+    .hud-corner.tr { top: 52px;   right: 16px; border-top: 1.5px solid #00F5C8; border-right: 1.5px solid #00F5C8; }
     .hud-corner.bl { bottom: 52px; left: 16px;  border-bottom: 1.5px solid #00F5C8; border-left: 1.5px solid #00F5C8; }
     .hud-corner.br { bottom: 52px; right: 16px; border-bottom: 1.5px solid #00F5C8; border-right: 1.5px solid #00F5C8; }
 
     #scan-prompt {
       position: absolute;
-      bottom: 60px;
-      left: 50%;
+      bottom: 60px; left: 50%;
       transform: translateX(-50%);
       white-space: nowrap;
-      font-size: 9px;
-      letter-spacing: 3px;
+      font-size: 9px; letter-spacing: 3px;
       text-align: center;
-      opacity: 0.65;
-      transition: all 0.4s ease;
+      transition: all .4s ease;
     }
+    #scan-prompt.searching { animation: blink 1.4s ease-in-out infinite; }
+    #scan-prompt.detected  { color: #00F5C8; text-shadow: 0 0 12px rgba(0,245,200,.6); }
 
-    #scan-prompt.detected {
-      opacity: 1;
-      color: #00F5C8;
-      text-shadow: 0 0 12px rgba(0,245,200,0.6);
+    @keyframes blink {
+      0%,100% { opacity: .28; }
+      50%      { opacity: .75; }
     }
-
-    @keyframes pulse {
-      0%, 100% { opacity: 0.25; }
-      50%       { opacity: 0.8;  }
+    @keyframes recdot {
+      0%,100% { opacity: .25; }
+      50%      { opacity: .9;  }
     }
-    .pulse-dot { animation: pulse 1.4s ease-in-out infinite; }
-
-    /* Override MindAR loading spinner to match palette */
-    .mindar-ui-overlay {
-      background: rgba(0,0,0,0.85) !important;
-      font-family: 'Courier New', Courier, monospace !important;
-      color: #00F5C8 !important;
-    }
-    .mindar-ui-scanning > * {
-      border-color: #00F5C8 !important;
-    }
+    .rec-blink { animation: recdot 1.4s ease-in-out infinite; }
   </style>
 </head>
 
 <body>
 <div id="ar-container">
 
-  <!-- ── HUD (always on top) ───────────────────────────────────────── -->
+  <!-- ── Start / error screen ────────────────────────────────────────── -->
+  <div id="start-screen">
+    <h1>FACE ANALYSIS PROTOCOL</h1>
+    <button id="start-btn">INITIALISE AR</button>
+    <div id="loading-bar"></div>
+    <div id="status-msg">Point camera at artwork to reveal the algorithmic layer.</div>
+  </div>
+
+  <!-- ── HUD (shown after camera starts) ─────────────────────────────── -->
   <div id="hud">
     <div id="top-bar">
       <span>FACE ANALYSIS PROTOCOL</span>
-      <span style="color:#FF3E3E;" class="pulse-dot">● REC</span>
+      <span style="color:#FF3E3E" class="rec-blink">● REC</span>
     </div>
-
     <div class="hud-corner tl"></div>
     <div class="hud-corner tr"></div>
     <div class="hud-corner bl"></div>
     <div class="hud-corner br"></div>
-
-    <div id="scan-prompt" class="pulse-dot">
-      POINT CAMERA AT ARTWORK
-    </div>
-
+    <div id="scan-prompt" class="searching">POINT CAMERA AT ARTWORK</div>
     <div id="bot-bar">
       <span><span style="opacity:.45">CONF: </span><span id="conf-val">—</span></span>
       <span><span style="opacity:.45">PTS: </span><span id="pts-val">—</span></span>
@@ -128,254 +201,248 @@
     </div>
   </div>
 
-</div><!-- #ar-container -->
+</div>
 
-<!-- ── MindAR + Three.js (bundled together) ──────────────────────── -->
 <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-three.prod.js"></script>
-
 <script>
-document.addEventListener('DOMContentLoaded', async () => {
+/* ── Face landmarks (normalised 0-1 over artwork image) ──────────────── */
+const PTS = [
+  [.214,.268],[.192,.344],[.180,.424],[.196,.510],[.231,.591],
+  [.279,.668],[.352,.726],[.432,.752],[.512,.727],[.576,.668],
+  [.622,.589],[.642,.507],[.638,.420],[.615,.336],[.587,.266],
+  [.218,.260],[.265,.226],[.318,.216],[.372,.232],[.416,.258],
+  [.436,.248],[.483,.215],[.541,.214],[.593,.234],[.633,.264],
+  [.238,.320],[.278,.298],[.330,.296],[.379,.318],[.335,.356],[.284,.358],
+  [.436,.308],[.480,.286],[.538,.284],[.588,.308],[.545,.346],[.490,.348],
+  [.420,.338],[.418,.382],[.413,.436],[.410,.496],
+  [.352,.528],[.386,.546],[.426,.548],[.466,.541],[.506,.527],
+  [.296,.618],[.336,.590],[.386,.579],[.436,.578],[.492,.589],[.558,.617],
+  [.520,.667],[.462,.686],[.404,.687],[.346,.668],
+  [.431,.740]
+];
 
-  /* ── Facial landmark positions (normalised 0→1 over artwork image) ── */
-  const PTS = [
-    // Jaw line (0-14)
-    [.214,.268],[.192,.344],[.180,.424],[.196,.510],[.231,.591],
-    [.279,.668],[.352,.726],[.432,.752],[.512,.727],[.576,.668],
-    [.622,.589],[.642,.507],[.638,.420],[.615,.336],[.587,.266],
-    // L eyebrow (15-19)
-    [.218,.260],[.265,.226],[.318,.216],[.372,.232],[.416,.258],
-    // R eyebrow (20-24)
-    [.436,.248],[.483,.215],[.541,.214],[.593,.234],[.633,.264],
-    // L eye (25-30)
-    [.238,.320],[.278,.298],[.330,.296],[.379,.318],[.335,.356],[.284,.358],
-    // R eye (31-36)
-    [.436,.308],[.480,.286],[.538,.284],[.588,.308],[.545,.346],[.490,.348],
-    // Nose bridge (37-40)
-    [.420,.338],[.418,.382],[.413,.436],[.410,.496],
-    // Nose base (41-45)
-    [.352,.528],[.386,.546],[.426,.548],[.466,.541],[.506,.527],
-    // Mouth (46-55)
-    [.296,.618],[.336,.590],[.386,.579],[.436,.578],[.492,.589],[.558,.617],
-    [.520,.667],[.462,.686],[.404,.687],[.346,.668],
-    // Chin (56)
-    [.431,.740]
-  ];
+const EDGES = [
+  [0,1],[1,2],[2,3],[3,4],[4,5],[5,6],[6,7],[7,8],[8,9],[9,10],
+  [10,11],[11,12],[12,13],[13,14],
+  [15,16],[16,17],[17,18],[18,19],
+  [20,21],[21,22],[22,23],[23,24],
+  [25,26],[26,27],[27,28],[28,29],[29,30],[30,25],
+  [31,32],[32,33],[33,34],[34,35],[35,36],[36,31],
+  [37,38],[38,39],[39,40],
+  [40,41],[40,43],[40,45],[41,42],[42,43],[43,44],[44,45],
+  [46,47],[47,48],[48,49],[49,50],[50,51],[51,46],
+  [51,52],[52,53],[53,54],[54,55],[55,46],
+  [7,56],[8,56],[15,25],[19,28],[20,31],[24,34],
+  [37,27],[37,32],[4,46],[10,51],[0,15],[14,24]
+];
 
-  const EDGES = [
-    [0,1],[1,2],[2,3],[3,4],[4,5],[5,6],[6,7],[7,8],[8,9],[9,10],
-    [10,11],[11,12],[12,13],[13,14],
-    [15,16],[16,17],[17,18],[18,19],
-    [20,21],[21,22],[22,23],[23,24],
-    [25,26],[26,27],[27,28],[28,29],[29,30],[30,25],
-    [31,32],[32,33],[33,34],[34,35],[35,36],[36,31],
-    [37,38],[38,39],[39,40],
-    [40,41],[40,43],[40,45],[41,42],[42,43],[43,44],[44,45],
-    [46,47],[47,48],[48,49],[49,50],[50,51],[51,46],
-    [51,52],[52,53],[53,54],[54,55],[55,46],
-    [7,56],[8,56],[15,25],[19,28],[20,31],[24,34],
-    [37,27],[37,32],[4,46],[10,51],[0,15],[14,24]
-  ];
+const MEASURES = [[27,33],[25,34],[0,14],[7,56],[37,43]];
 
-  const MEASURES = [
-    [27,33],[25,34],[0,14],[7,56],[37,43]
-  ];
+/* ── UI refs ─────────────────────────────────────────────────────────── */
+const startScreen = document.getElementById('start-screen');
+const startBtn    = document.getElementById('start-btn');
+const statusMsg   = document.getElementById('status-msg');
+const loadingBar  = document.getElementById('loading-bar');
+const hud         = document.getElementById('hud');
+const scanPrompt  = document.getElementById('scan-prompt');
+const confVal     = document.getElementById('conf-val');
+const ptsVal      = document.getElementById('pts-val');
 
-  /* ── Coordinate conversion ──────────────────────────────────────────
-     MindAR image plane: width = 1 unit, y-axis UP, origin at centre.
-     Artwork is portrait ≈ 3:4 → height = 4/3 ≈ 1.333 MindAR units.
-  ────────────────────────────────────────────────────────────────── */
-  const IMG_H = 4 / 3;
-  const toAR = (nx, ny, z = 0.015) =>
-    new THREE.Vector3((nx - 0.5), (0.5 - ny) * IMG_H, z);
+function setStatus(msg, isError = false) {
+  statusMsg.textContent = msg;
+  statusMsg.className   = isError ? 'error' : '';
+}
 
-  const arPts = PTS.map(([x, y]) => toAR(x, y));
+/* ── Main AR init (triggered by button tap — satisfies user-gesture req) */
+startBtn.addEventListener('click', async () => {
+  startBtn.disabled   = true;
+  startBtn.textContent = 'LOADING…';
+  loadingBar.classList.add('active');
+  setStatus('Loading image target data…');
 
-  /* ── MindAR init ──────────────────────────────────────────────────── */
-  const mindarThree = new window.MINDAR.IMAGE.MindARThree({
-    container:      document.getElementById('ar-container'),
-    imageTargetSrc: './targets.mind',
-    uiLoading:      'yes',
-    uiScanning:     'yes',
-    uiError:        'yes',
-    filterMinCF:    0.001,
-    filterBeta:     1000,
-    missTolerance:  2,
-    warmupTolerance: 2,
-  });
-
-  const { renderer, scene, camera } = mindarThree;
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-  renderer.setClearColor(0x000000, 0);
-
-  const anchor = mindarThree.addAnchor(0);
-
-  /* ── Mesh edge lines ─────────────────────────────────────────────── */
-  const edgeVerts = [];
-  EDGES.forEach(([a, b]) => { edgeVerts.push(arPts[a].clone(), arPts[b].clone()); });
-  const edgeGeo = new THREE.BufferGeometry().setFromPoints(edgeVerts);
-
-  const edgeMat = new THREE.LineBasicMaterial({
-    color: 0x00F5C8, transparent: true, opacity: 0,
-    blending: THREE.AdditiveBlending, depthWrite: false
-  });
-  anchor.group.add(new THREE.LineSegments(edgeGeo, edgeMat));
-
-  // Wider soft glow pass
-  const glowEdgeMat = new THREE.LineBasicMaterial({
-    color: 0x00AAFF, transparent: true, opacity: 0,
-    blending: THREE.AdditiveBlending, depthWrite: false
-  });
-  const glowEdgeLines = new THREE.LineSegments(edgeGeo.clone(), glowEdgeMat);
-  glowEdgeLines.scale.setScalar(1.006);
-  anchor.group.add(glowEdgeLines);
-
-  /* ── Landmark dots ──────────────────────────────────────────────── */
-  const ptGeo = new THREE.BufferGeometry().setFromPoints(arPts);
-
-  const ptMat = new THREE.PointsMaterial({
-    color: 0xFFFFFF, size: 0.014, transparent: true, opacity: 0,
-    blending: THREE.AdditiveBlending, depthWrite: false, sizeAttenuation: true
-  });
-  anchor.group.add(new THREE.Points(ptGeo, ptMat));
-
-  const glowPtMat = new THREE.PointsMaterial({
-    color: 0x00F5C8, size: 0.038, transparent: true, opacity: 0,
-    blending: THREE.AdditiveBlending, depthWrite: false, sizeAttenuation: true
-  });
-  anchor.group.add(new THREE.Points(ptGeo.clone(), glowPtMat));
-
-  /* ── Biometric measurement lines (red) ──────────────────────────── */
-  const measVerts = [];
-  MEASURES.forEach(([a, b]) => { measVerts.push(arPts[a].clone(), arPts[b].clone()); });
-  const measMat = new THREE.LineBasicMaterial({
-    color: 0xFF3E3E, transparent: true, opacity: 0,
-    blending: THREE.AdditiveBlending, depthWrite: false
-  });
-  anchor.group.add(new THREE.LineSegments(
-    new THREE.BufferGeometry().setFromPoints(measVerts), measMat
-  ));
-
-  /* ── Scan plane ─────────────────────────────────────────────────── */
-  const scanMat = new THREE.MeshBasicMaterial({
-    color: 0x00F5C8, transparent: true, opacity: 0,
-    blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide
-  });
-  const scanPlane = new THREE.Mesh(new THREE.PlaneGeometry(1.05, 0.03), scanMat);
-  scanPlane.position.z = 0.012;
-  anchor.group.add(scanPlane);
-
-  /* ── "SUBJECT UNRESOLVED" canvas-texture plane ──────────────────── */
-  const txtCv = document.createElement('canvas');
-  txtCv.width = 640; txtCv.height = 52;
-  const tc = txtCv.getContext('2d');
-  tc.fillStyle = '#00F5C8';
-  tc.font = 'bold 20px Courier New, Courier, monospace';
-  tc.textAlign = 'center';
-  tc.fillText('ANALYSIS COMPLETE  —  SUBJECT UNRESOLVED', 320, 36);
-  const txtMat = new THREE.MeshBasicMaterial({
-    map: new THREE.CanvasTexture(txtCv),
-    transparent: true, opacity: 0,
-    blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide
-  });
-  const txtPlane = new THREE.Mesh(new THREE.PlaneGeometry(0.92, 0.058), txtMat);
-  txtPlane.position.set(0, -(IMG_H / 2) + 0.05, 0.018);
-  anchor.group.add(txtPlane);
-
-  /* ── 3D corner brackets ─────────────────────────────────────────── */
-  const cS = 0.065, cX = 0.51, cY = IMG_H / 2 + 0.005, cZ = 0.018;
-  const bracketVerts = [
-    // TL
-    new THREE.Vector3(-cX,  cY, cZ), new THREE.Vector3(-cX+cS, cY,    cZ),
-    new THREE.Vector3(-cX,  cY, cZ), new THREE.Vector3(-cX,    cY-cS, cZ),
-    // TR
-    new THREE.Vector3( cX,  cY, cZ), new THREE.Vector3( cX-cS, cY,    cZ),
-    new THREE.Vector3( cX,  cY, cZ), new THREE.Vector3( cX,    cY-cS, cZ),
-    // BL
-    new THREE.Vector3(-cX, -cY, cZ), new THREE.Vector3(-cX+cS,-cY,    cZ),
-    new THREE.Vector3(-cX, -cY, cZ), new THREE.Vector3(-cX,   -cY+cS, cZ),
-    // BR
-    new THREE.Vector3( cX, -cY, cZ), new THREE.Vector3( cX-cS,-cY,    cZ),
-    new THREE.Vector3( cX, -cY, cZ), new THREE.Vector3( cX,   -cY+cS, cZ),
-  ];
-  const bracketMat = new THREE.LineBasicMaterial({
-    color: 0x00F5C8, transparent: true, opacity: 0,
-    blending: THREE.AdditiveBlending, depthWrite: false
-  });
-  anchor.group.add(new THREE.LineSegments(
-    new THREE.BufferGeometry().setFromPoints(bracketVerts), bracketMat
-  ));
-
-  /* ── HUD element refs ───────────────────────────────────────────── */
-  const scanPrompt = document.getElementById('scan-prompt');
-  const confVal    = document.getElementById('conf-val');
-  const ptsVal     = document.getElementById('pts-val');
-
-  /* ── Tracking state ─────────────────────────────────────────────── */
-  let trackStart = null;
-
-  anchor.onTargetFound = () => {
-    trackStart = performance.now();
-    scanPrompt.textContent = 'TARGET ACQUIRED — ANALYZING';
-    scanPrompt.classList.remove('pulse-dot');
-    scanPrompt.classList.add('detected');
-  };
-
-  anchor.onTargetLost = () => {
-    trackStart = null;
-    scanPrompt.textContent = 'POINT CAMERA AT ARTWORK';
-    scanPrompt.classList.add('pulse-dot');
-    scanPrompt.classList.remove('detected');
-    confVal.textContent = '—';
-    ptsVal.textContent  = '—';
-    [edgeMat, glowEdgeMat, ptMat, glowPtMat, measMat, scanMat, txtMat, bracketMat]
-      .forEach(m => { m.opacity = 0; });
-  };
-
-  /* ── Start MindAR ───────────────────────────────────────────────── */
-  await mindarThree.start();
-
-  /* ── Render loop ────────────────────────────────────────────────── */
-  renderer.setAnimationLoop(() => {
-    const now = performance.now();
-    const t   = now / 1000;
-
-    if (trackStart !== null) {
-      const el = (now - trackStart) / 1000;   // elapsed since target found
-      const a  = Math.min(1, el * 1.8);        // fade-in alpha
-
-      // Pulse sine values
-      const p1 = 0.5 + 0.5 * Math.sin(t * 2.8);
-      const p2 = 0.5 + 0.5 * Math.sin(t * 2.2 + 1.0);
-
-      // Cyan mesh
-      edgeMat.opacity     = (0.38 + 0.18 * p1) * a;
-      glowEdgeMat.opacity = (0.12 + 0.06 * p2) * a;
-      ptMat.opacity       = (0.85 + 0.15 * p1) * a;
-      glowPtMat.opacity   = (0.28 + 0.12 * p2) * a;
-
-      // 3D bracket fade-in
-      bracketMat.opacity  = Math.min(0.75, el * 2) * a;
-
-      // Scan plane sweeps top → bottom continuously
-      scanMat.opacity      = 0.12 * a;
-      scanPlane.position.y = (0.5 - ((el * 0.18) % 1)) * IMG_H;
-
-      // Biometric lines after 4 s
-      measMat.opacity = el > 4 ? Math.min(0.55, (el - 4) * 0.4) : 0;
-
-      // "SUBJECT UNRESOLVED" after 15 s
-      txtMat.opacity  = el > 15 ? Math.min(0.9, (el - 15) * 0.25) : 0;
-
-      // HUD counters
-      confVal.textContent = Math.min(99.7, el * 6.5).toFixed(1) + '%';
-      ptsVal.textContent  = Math.min(PTS.length, Math.floor(el * 9) + 1)
-                            + '/' + PTS.length;
+  try {
+    /* Check MindAR loaded */
+    if (!window.MINDAR || !window.MINDAR.IMAGE) {
+      throw new Error('MindAR library failed to load. Check network connection.');
     }
 
-    renderer.render(scene, camera);
-  });
+    const IMG_H = 4 / 3;
+    const toAR  = (nx, ny, z = 0.015) =>
+      new THREE.Vector3((nx - 0.5), (0.5 - ny) * IMG_H, z);
+    const arPts = PTS.map(([x, y]) => toAR(x, y));
 
-}); // DOMContentLoaded
+    /* ── MindAR ─────────────────────────────────────────────────────── */
+    setStatus('Requesting camera access…');
+
+    const mindarThree = new window.MINDAR.IMAGE.MindARThree({
+      container:       document.getElementById('ar-container'),
+      imageTargetSrc:  './targets.mind',
+      uiLoading:       'yes',
+      uiScanning:      'no',
+      uiError:         'yes',
+      filterMinCF:     0.001,
+      filterBeta:      1000,
+      missTolerance:   2,
+      warmupTolerance: 2,
+    });
+
+    const { renderer, scene, camera } = mindarThree;
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+    const anchor = mindarThree.addAnchor(0);
+
+    /* Mesh edges */
+    const edgeVerts = [];
+    EDGES.forEach(([a,b]) => { edgeVerts.push(arPts[a].clone(), arPts[b].clone()); });
+    const edgeGeo = new THREE.BufferGeometry().setFromPoints(edgeVerts);
+    const edgeMat = new THREE.LineBasicMaterial({
+      color:0x00F5C8, transparent:true, opacity:0,
+      blending:THREE.AdditiveBlending, depthWrite:false
+    });
+    anchor.group.add(new THREE.LineSegments(edgeGeo, edgeMat));
+
+    const glowEdgeMat = new THREE.LineBasicMaterial({
+      color:0x00AAFF, transparent:true, opacity:0,
+      blending:THREE.AdditiveBlending, depthWrite:false
+    });
+    const glowLines = new THREE.LineSegments(edgeGeo.clone(), glowEdgeMat);
+    glowLines.scale.setScalar(1.006);
+    anchor.group.add(glowLines);
+
+    /* Dots */
+    const ptGeo = new THREE.BufferGeometry().setFromPoints(arPts);
+    const ptMat = new THREE.PointsMaterial({
+      color:0xFFFFFF, size:0.014, transparent:true, opacity:0,
+      blending:THREE.AdditiveBlending, depthWrite:false
+    });
+    anchor.group.add(new THREE.Points(ptGeo, ptMat));
+
+    const glowPtMat = new THREE.PointsMaterial({
+      color:0x00F5C8, size:0.038, transparent:true, opacity:0,
+      blending:THREE.AdditiveBlending, depthWrite:false
+    });
+    anchor.group.add(new THREE.Points(ptGeo.clone(), glowPtMat));
+
+    /* Measurement lines */
+    const measVerts = [];
+    MEASURES.forEach(([a,b]) => { measVerts.push(arPts[a].clone(), arPts[b].clone()); });
+    const measMat = new THREE.LineBasicMaterial({
+      color:0xFF3E3E, transparent:true, opacity:0,
+      blending:THREE.AdditiveBlending, depthWrite:false
+    });
+    anchor.group.add(new THREE.LineSegments(
+      new THREE.BufferGeometry().setFromPoints(measVerts), measMat
+    ));
+
+    /* Scan plane */
+    const scanMat = new THREE.MeshBasicMaterial({
+      color:0x00F5C8, transparent:true, opacity:0,
+      blending:THREE.AdditiveBlending, depthWrite:false, side:THREE.DoubleSide
+    });
+    const scanPlane = new THREE.Mesh(new THREE.PlaneGeometry(1.05,0.03), scanMat);
+    scanPlane.position.z = 0.012;
+    anchor.group.add(scanPlane);
+
+    /* "SUBJECT UNRESOLVED" text */
+    const txtCv = document.createElement('canvas');
+    txtCv.width = 640; txtCv.height = 52;
+    const tc = txtCv.getContext('2d');
+    tc.fillStyle = '#00F5C8';
+    tc.font = 'bold 20px Courier New, monospace';
+    tc.textAlign = 'center';
+    tc.fillText('ANALYSIS COMPLETE  —  SUBJECT UNRESOLVED', 320, 36);
+    const txtMat = new THREE.MeshBasicMaterial({
+      map:new THREE.CanvasTexture(txtCv), transparent:true, opacity:0,
+      blending:THREE.AdditiveBlending, depthWrite:false, side:THREE.DoubleSide
+    });
+    const txtPlane = new THREE.Mesh(new THREE.PlaneGeometry(0.92,0.058), txtMat);
+    txtPlane.position.set(0, -(IMG_H/2) + 0.05, 0.018);
+    anchor.group.add(txtPlane);
+
+    /* 3D brackets */
+    const cS=0.065, cX=0.51, cY=IMG_H/2+0.005, cZ=0.018;
+    const bracketVerts = [
+      new THREE.Vector3(-cX, cY,cZ), new THREE.Vector3(-cX+cS, cY,   cZ),
+      new THREE.Vector3(-cX, cY,cZ), new THREE.Vector3(-cX,    cY-cS,cZ),
+      new THREE.Vector3( cX, cY,cZ), new THREE.Vector3( cX-cS, cY,   cZ),
+      new THREE.Vector3( cX, cY,cZ), new THREE.Vector3( cX,    cY-cS,cZ),
+      new THREE.Vector3(-cX,-cY,cZ), new THREE.Vector3(-cX+cS,-cY,   cZ),
+      new THREE.Vector3(-cX,-cY,cZ), new THREE.Vector3(-cX,   -cY+cS,cZ),
+      new THREE.Vector3( cX,-cY,cZ), new THREE.Vector3( cX-cS,-cY,   cZ),
+      new THREE.Vector3( cX,-cY,cZ), new THREE.Vector3( cX,   -cY+cS,cZ),
+    ];
+    const bracketMat = new THREE.LineBasicMaterial({
+      color:0x00F5C8, transparent:true, opacity:0,
+      blending:THREE.AdditiveBlending, depthWrite:false
+    });
+    anchor.group.add(new THREE.LineSegments(
+      new THREE.BufferGeometry().setFromPoints(bracketVerts), bracketMat
+    ));
+
+    /* ── Tracking callbacks ─────────────────────────────────────────── */
+    let trackStart = null;
+
+    anchor.onTargetFound = () => {
+      trackStart = performance.now();
+      scanPrompt.textContent = 'TARGET ACQUIRED — ANALYZING';
+      scanPrompt.className   = 'detected';
+    };
+
+    anchor.onTargetLost = () => {
+      trackStart = null;
+      scanPrompt.textContent = 'POINT CAMERA AT ARTWORK';
+      scanPrompt.className   = 'searching';
+      confVal.textContent    = '—';
+      ptsVal.textContent     = '—';
+      [edgeMat,glowEdgeMat,ptMat,glowPtMat,measMat,scanMat,txtMat,bracketMat]
+        .forEach(m => { m.opacity = 0; });
+    };
+
+    /* ── Start ──────────────────────────────────────────────────────── */
+    setStatus('Starting camera…');
+    await mindarThree.start();
+
+    /* Camera is running — switch UI */
+    startScreen.style.display = 'none';
+    hud.classList.add('visible');
+
+    /* ── Render loop ────────────────────────────────────────────────── */
+    renderer.setAnimationLoop(() => {
+      const now = performance.now();
+      const t   = now / 1000;
+
+      if (trackStart !== null) {
+        const el = (now - trackStart) / 1000;
+        const a  = Math.min(1, el * 1.8);
+        const p1 = 0.5 + 0.5 * Math.sin(t * 2.8);
+        const p2 = 0.5 + 0.5 * Math.sin(t * 2.2 + 1.0);
+
+        edgeMat.opacity     = (0.38 + 0.18 * p1) * a;
+        glowEdgeMat.opacity = (0.12 + 0.06 * p2) * a;
+        ptMat.opacity       = (0.85 + 0.15 * p1) * a;
+        glowPtMat.opacity   = (0.28 + 0.12 * p2) * a;
+        bracketMat.opacity  = Math.min(0.75, el * 2) * a;
+        scanMat.opacity     = 0.12 * a;
+        scanPlane.position.y = (0.5 - ((el * 0.18) % 1)) * IMG_H;
+        measMat.opacity     = el > 4  ? Math.min(0.55, (el - 4)  * 0.4)  : 0;
+        txtMat.opacity      = el > 15 ? Math.min(0.9,  (el - 15) * 0.25) : 0;
+
+        confVal.textContent = Math.min(99.7, el * 6.5).toFixed(1) + '%';
+        ptsVal.textContent  = Math.min(PTS.length, Math.floor(el * 9) + 1)
+                              + '/' + PTS.length;
+      }
+
+      renderer.render(scene, camera);
+    });
+
+  } catch (err) {
+    console.error('AR init error:', err);
+    loadingBar.classList.remove('active');
+    startBtn.disabled    = false;
+    startBtn.textContent = 'RETRY';
+    setStatus('ERROR: ' + err.message, true);
+  }
+});
 </script>
 </body>
 </html>
